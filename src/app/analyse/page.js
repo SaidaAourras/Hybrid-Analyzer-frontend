@@ -1,30 +1,41 @@
-'use client'
-import React, { useEffect, useState } from 'react';
-import { Send, FileText, TrendingUp, Tag, Smile, Calendar, User } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+"use client";
+import React, { useEffect, useState } from "react";
+import {
+  Send,
+  FileText,
+  TrendingUp,
+  Tag,
+  Smile,
+  Calendar,
+  User,
+  LogOut,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "../hooks/useAuth";
 
 export default function HybridAnalyzer() {
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState("");
   const [result, setResult] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const router = useRouter()
+  const router = useRouter();
 
-  useEffect(()=>{
-    const token = localStorage.getItem('token')
-    if(!token){
-      router.push('/auth/login')
+  const { logout } = useAuth();
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/auth/login");
     }
-  },[router])
+  }, [router]);
   const analyze = async (text, token) => {
     const API_URL = "http://localhost:8000";
     const encodedText = encodeURIComponent(text);
-    
+
     const response = await fetch(
       `${API_URL}/api/v1/analysis/analyse?text=${encodedText}`,
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       }
     );
@@ -35,55 +46,68 @@ export default function HybridAnalyzer() {
       console.error("Erreur backend:", data);
       throw new Error(data.detail || "Erreur lors de l'analyse");
     }
-    
+
     return data;
   };
 
-  const handleAnalyze = async(e) => {
+  const handleAnalyze = async (e) => {
     e.preventDefault();
     setIsAnalyzing(true);
-    const token = localStorage.getItem('token')
-    try{
-      const data = await analyze(inputText , token)
-      console.log(data)
-      setResult(data)
-    }catch(err){
-      console.log(err)
-    }finally{
-      setIsAnalyzing(false)
+    const token = localStorage.getItem("token");
+    try {
+      const data = await analyze(inputText, token);
+      console.log(data);
+      setResult(data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setIsAnalyzing(false);
     }
-    
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12 pt-8">
-          <h1 className="text-6xl font-bold text-white mb-4 tracking-tight">
-            Hybrid-Analyzer
-          </h1>
-          <p className="text-xl text-slate-400 font-light">
-            Projectt — AI-Powered Media Monitoring Pipeline
-          </p>
-        </div>
+        <header className="w-full flex items-center justify-between px-6 py-4 mb-6">
+          {/* Logo ou titre de l'app */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-indigo-600/80 rounded-xl flex items-center justify-center backdrop-blur">
+              <User className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-white font-bold text-2xl">
+              Hybrid-Analyzer
+            </span>
+          </div>
 
+          {/* Bouton logout */}
+          <button
+            onClick={logout}
+            className="text-white hover:text-red-400 transition-colors p-2"
+            title="Se déconnecter"
+          >
+            <LogOut className="w-6 h-6" />
+          </button>
+        </header>
+        
         {/* Input Section */}
         <div className="bg-slate-900/80 backdrop-blur-lg rounded-3xl p-8 mb-8 border border-slate-700/50 shadow-2xl">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-indigo-600/80 rounded-xl flex items-center justify-center backdrop-blur">
               <FileText className="w-6 h-6 text-white" />
             </div>
-            <h2 className="text-2xl font-semibold text-white">Analyse de Texte</h2>
+            <h2 className="text-2xl font-semibold text-white">
+              Analyse de Texte
+            </h2>
           </div>
-          
+
           <textarea
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Entrez votre texte à analyser ici..."
             className="w-full h-48 bg-slate-800/90 border border-slate-600/50 rounded-2xl p-6 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none backdrop-blur text-lg"
           />
-          
+
           <button
             onClick={handleAnalyze}
             disabled={!inputText.trim() || isAnalyzing}
@@ -110,7 +134,9 @@ export default function HybridAnalyzer() {
               <div className="w-12 h-12 bg-purple-700/80 rounded-xl flex items-center justify-center backdrop-blur">
                 <TrendingUp className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-2xl font-semibold text-white">Résultats de l'Analyse</h2>
+              <h2 className="text-2xl font-semibold text-white">
+                Résultats de l'Analyse
+              </h2>
             </div>
 
             {/* Resume */}
@@ -119,7 +145,9 @@ export default function HybridAnalyzer() {
                 <FileText className="w-5 h-5" />
                 Résumé
               </h3>
-              <p className="text-white/95 text-lg leading-relaxed">{result.resume}</p>
+              <p className="text-white/95 text-lg leading-relaxed">
+                {result.resume}
+              </p>
             </div>
 
             {/* Metrics Grid */}
@@ -130,7 +158,9 @@ export default function HybridAnalyzer() {
                   <Tag className="w-5 h-5 text-purple-300" />
                   <span className="text-purple-300 font-medium">Catégorie</span>
                 </div>
-                <p className="text-2xl font-bold text-white capitalize">{result.category}</p>
+                <p className="text-2xl font-bold text-white capitalize">
+                  {result.category}
+                </p>
               </div>
 
               {/* Ton */}
@@ -139,7 +169,9 @@ export default function HybridAnalyzer() {
                   <Smile className="w-5 h-5 text-green-300" />
                   <span className="text-emerald-300 font-medium">Ton</span>
                 </div>
-                <p className="text-2xl font-bold text-white capitalize">{result.ton}</p>
+                <p className="text-2xl font-bold text-white capitalize">
+                  {result.ton}
+                </p>
               </div>
 
               {/* Score */}
@@ -148,7 +180,9 @@ export default function HybridAnalyzer() {
                   <TrendingUp className="w-5 h-5 text-blue-300" />
                   <span className="text-blue-300 font-medium">Score</span>
                 </div>
-                <p className="text-2xl font-bold text-white">{(result.score * 100).toFixed(2)}%</p>
+                <p className="text-2xl font-bold text-white">
+                  {(result.score * 100).toFixed(2)}%
+                </p>
               </div>
             </div>
 
@@ -176,7 +210,7 @@ export default function HybridAnalyzer() {
                   <span className="text-sm font-medium">Date</span>
                 </div>
                 <p className="text-white font-semibold text-sm">
-                  {new Date(result.createdAt).toLocaleString('fr-FR')}
+                  {new Date(result.createdAt).toLocaleString("fr-FR")}
                 </p>
               </div>
             </div>
