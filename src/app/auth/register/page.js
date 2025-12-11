@@ -1,6 +1,7 @@
 'use client'
 import { useState } from "react";
 import { UserPlus, Mail, Lock, User } from "lucide-react";
+import { useRouter } from 'next/navigation';
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
@@ -9,6 +10,7 @@ export default function AuthPage() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const router = useRouter()
 
   const register = async (username, email, password) => {
     const API_URL = "http://localhost:8000";
@@ -29,40 +31,34 @@ export default function AuthPage() {
     return data;
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
-    setSuccess(false);
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError(null);
+  setSuccess(false);
 
-    // Validation des champs
-    if (!username.trim()) {
-      setError("Le nom d'utilisateur est obligatoire");
-      return;
-    }
-    if (!email.trim()) {
-      setError("L'email est obligatoire");
-      return;
-    }
-    if (!password.trim()) {
-      setError("Le mot de passe est obligatoire");
-      return;
-    }
-    if (password.length < 6) {
-      setError("Le mot de passe doit contenir au moins 6 caractères");
-      return;
-    }
+  // Validation
+  if (!username.trim()) return setError("Le nom d'utilisateur est obligatoire");
+  if (!email.trim()) return setError("L'email est obligatoire");
+  if (!password.trim()) return setError("Le mot de passe est obligatoire");
+  if (password.length < 6) return setError("Le mot de passe doit contenir au moins 6 caractères");
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      await register(username, email, password);
-      setSuccess(true);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    await register(username, email, password);
+    setSuccess(true);
+
+    setTimeout(() => {
+      router.push("/auth/login");
+    }, 1000);
+
+  } catch (err) {
+    setError(err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-6">

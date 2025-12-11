@@ -1,12 +1,20 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Send, FileText, TrendingUp, Tag, Smile, Calendar, User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function HybridAnalyzer() {
   const [inputText, setInputText] = useState('');
   const [result, setResult] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const router = useRouter()
 
+  useEffect(()=>{
+    const token = localStorage.getItem('token')
+    if(!token){
+      router.push('/auth/login')
+    }
+  },[router])
   const analyze = async (text, token) => {
     const API_URL = "http://localhost:8000";
     const encodedText = encodeURIComponent(text);

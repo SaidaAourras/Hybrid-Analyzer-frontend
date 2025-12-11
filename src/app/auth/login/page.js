@@ -1,6 +1,7 @@
 'use client'
 import { useState } from "react";
 import { LogIn, Mail, Lock } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -8,6 +9,7 @@ export default function LoginPage() {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const router = useRouter()
 
   const login = async (email, password) => {
     const API_URL = "http://localhost:8000";
@@ -33,7 +35,6 @@ export default function LoginPage() {
     setError(null);
     setSuccess(false);
 
-    // Validation des champs
     if (!email.trim()) {
       setError("L'email est obligatoire");
       return;
@@ -47,14 +48,21 @@ export default function LoginPage() {
 
     try {
       const data = await login(email, password);
-      localStorage.setItem('token', data.token);
+
+      localStorage.setItem("token", data.token);
+
       setSuccess(true);
+      setTimeout(() => {
+        router.push("/analyse");  
+      }, 1000);
+
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 p-6">
