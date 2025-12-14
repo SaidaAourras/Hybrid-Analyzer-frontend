@@ -1,32 +1,38 @@
-# ----------------------------------------------------------------------
-# Dockerfile pour le service Frontend (Next.js)
-# ----------------------------------------------------------------------
+# ---- stage build --------
 
-# --- ÉTAPE 1: Build Stage ---
-# Utiliser Node 20 pour compiler Next.js
-FROM node:20-alpine AS builder
+FROM node:20.9.0-slim AS builder
 
 WORKDIR /app
 
-# Copier les fichiers de configuration et installer les dépendances
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json* ./
+
 RUN npm install
 
-# Copier le code source et lancer la construction
 COPY . .
+
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 RUN npm run build
 
-# --- ÉTAPE 2: Production Stage ---
-FROM node:20-alpine
+# ----- stage production ---------
+FROM node:20.9.0-alpine AS runner
 
 WORKDIR /app
 
-# Copier les fichiers buildés et dépendances
+ENV NODE_ENV=production
+
+# Copier package.json
+COPY --from=builder /app/package.json ./
+
+# Installer les dépendances de production
+RUN npm install --production --frozen-lockfile
+
+# Copier les fichiers buildés
 COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/public ./public
+
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["npm" , "start"]
